@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web PiP Teleprompter</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; background: #f4f4f4; }
+        textarea { width: 100%; height: 150px; margin-bottom: 10px; border-radius: 8px; padding: 10px; }
+        .controls { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        button { padding: 15px; background: #007bff; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        canvas { display: none; } /* O canvas não precisa aparecer na página */
+    </style>
+</head>
+<body>
+
+    <h2>Teleprompter PiP</h2>
+    <textarea id="textInput">Escreva seu roteiro aqui... Este texto vai subir suavemente na janelinha flutuante para que você possa gravar seus vídeos com facilidade!</textarea>
+
+    <div class="controls">
+        <label>Velocidade: <input type="range" id="speedRange" min="1" max="5" step="0.5" value="1.5"></label>
+        <button id="startBtn">ATIVAR MODO FLUTUANTE (PiP)</button>
+    </div>
+
+    <canvas id="tpCanvas" width="400" height="300"></canvas>
+
+    <script>
+        const canvas = document.getElementById('tpCanvas');
+        const ctx = canvas.getContext('2d');
+        const textInput = document.getElementById('textInput');
+        const speedRange = document.getElementById('speedRange');
+        const startBtn = document.getElementById('startBtn');
+
+        let yPos = canvas.height;
+        const video = document.createElement('video');
+        video.muted = true;
+
+        function drawText() {
+            // Fundo preto
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Configuração do Texto
+            ctx.fillStyle = "white";
+            ctx.font = "24px Arial";
+            ctx.textAlign = "center";
+
+            const lines = wrapText(textInput.value, 360);
+            
+            lines.forEach((line, index) => {
+                ctx.fillText(line, canvas.width / 2, yPos + (index * 30));
+            });
+
+            // Movimento
+            yPos -= parseFloat(speedRange.value);
+
+            // Resetar posição quando o texto acabar
+            if (yPos < -(lines.length * 30)) {
+                yPos = canvas.height;
+            }
+
+            requestAnimationFrame(drawText);
+        }
+
+        // Função auxiliar para quebrar linhas no canvas
+        function wrapText(text, maxWidth) {
+            const words = text.split(' ');
+            let lines = [];
+            let currentLine = words[0];
+
+            for (let i = 1; i < words.length; i++) {
+                let word = words[i];
+                let width = ctx.measureText(currentLine + " " + word).width;
+                if (width < maxWidth) {
+                    currentLine += " " + word;
+                } else {
+                    lines.push(currentLine);
+                    currentLine = word;
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        }
+
+        startBtn.addEventListener('click', async () => {
+    // 1. Inicia o desenho no canvas (se ainda não começou)
+    drawText();
+
+    // 2. Captura o stream
+    const stream = canvas.captureStream(30);
+    video.srcObject = stream;
+
+    // 3. Aguarda o vídeo carregar os metadados antes de pedir o PiP
+    video.onloadedmetadata = async () => {
+        try {
+            await video.play();
+            await video.requestPictureInPicture();
+        } catch (error) {
+            console.error("Erro ao ativar PiP:", error);
+            alert("Erro ao ativar o modo flutuante. Tente clicar novamente.");
+        }
+    };
+});
+    </script>
+</body>
+</html>
