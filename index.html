@@ -35,8 +35,7 @@
 
   body::before {
     content: '';
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background: repeating-linear-gradient(
       0deg, transparent, transparent 2px,
       rgba(0,229,255,0.012) 2px, rgba(0,229,255,0.012) 4px
@@ -46,11 +45,9 @@
   }
 
   header {
-    width: 100%;
-    max-width: 600px;
+    width: 100%; max-width: 600px;
     text-align: center;
-    position: relative;
-    z-index: 1;
+    position: relative; z-index: 1;
   }
 
   h1 {
@@ -65,82 +62,57 @@
   }
 
   .subtitle {
-    font-size: 0.6rem;
-    color: var(--muted);
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
+    font-size: 0.6rem; color: var(--muted);
+    letter-spacing: 0.3em; text-transform: uppercase;
     margin-top: 0.25rem;
   }
 
-  /* Setup panel */
-  .setup-panel {
-    width: 100%;
-    max-width: 600px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-    position: relative;
-    z-index: 1;
-  }
-
   .card {
+    width: 100%; max-width: 600px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 1rem;
+    position: relative; z-index: 1;
   }
 
   label {
     display: block;
-    font-size: 0.6rem;
-    letter-spacing: 0.25em;
-    color: var(--accent);
-    text-transform: uppercase;
-    margin-bottom: 0.5rem;
+    font-size: 0.6rem; letter-spacing: 0.25em;
+    color: var(--accent); text-transform: uppercase;
+    margin-bottom: 0.4rem;
   }
 
   textarea {
-    width: 100%;
-    height: 140px;
+    width: 100%; height: 130px;
     background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    border: 1px solid var(--border); border-radius: 8px;
     color: var(--text);
     font-family: 'Space Mono', monospace;
-    font-size: 0.85rem;
-    line-height: 1.6;
-    padding: 0.75rem;
-    resize: vertical;
-    outline: none;
+    font-size: 0.85rem; line-height: 1.6;
+    padding: 0.75rem; resize: vertical; outline: none;
     transition: border-color 0.2s;
   }
 
   textarea:focus { border-color: var(--accent); }
 
   .row {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    margin-top: 0.8rem;
+    display: flex; align-items: center;
+    gap: 0.8rem; margin-top: 0.8rem;
   }
 
   .row label { margin: 0; white-space: nowrap; }
 
   input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    flex: 1;
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    outline: none;
-    cursor: pointer;
+    -webkit-appearance: none; appearance: none;
+    flex: 1; height: 4px;
+    background: var(--border); border-radius: 2px;
+    outline: none; cursor: pointer;
   }
 
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 20px; height: 20px;
-    border-radius: 50%;
+    width: 20px; height: 20px; border-radius: 50%;
     background: var(--accent);
     box-shadow: 0 0 8px var(--accent);
     cursor: pointer;
@@ -148,146 +120,73 @@
 
   .val {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.3rem;
-    color: var(--accent2);
-    min-width: 2rem;
-    text-align: right;
+    font-size: 1.3rem; color: var(--accent2);
+    min-width: 2rem; text-align: right;
   }
 
-  /* Text style options */
-  .style-row {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.8rem;
-    flex-wrap: wrap;
-  }
-
-  .style-btn {
-    flex: 1;
-    min-width: 80px;
-    padding: 0.4rem 0.6rem;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--bg);
-    color: var(--muted);
-    font-family: 'Space Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.15s;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .style-btn.active {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: rgba(0,229,255,0.07);
-  }
-
-  /* Camera preview area */
-  .preview-area {
-    width: 100%;
-    max-width: 600px;
-    position: relative;
-    z-index: 1;
-    border-radius: 14px;
-    overflow: hidden;
+  /* Camera preview */
+  .camera-wrap {
+    width: 100%; max-width: 600px;
+    aspect-ratio: 9/16;
+    border-radius: 14px; overflow: hidden;
     border: 1px solid var(--border);
     background: #000;
-    aspect-ratio: 9/16;
-    display: none; /* hidden until camera starts */
+    position: relative; z-index: 1;
+    display: none;
   }
 
-  .preview-area.visible { display: block; }
+  .camera-wrap.visible { display: block; }
 
-  /* The canvas is the main display — overlaid on camera */
-  #previewCanvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  /* Camera video feed behind canvas */
   #cameraFeed {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
   }
 
-  /* REC indicator */
+  /* REC badge */
   .rec-badge {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(0,0,0,0.6);
-    border-radius: 20px;
+    position: absolute; top: 12px; left: 12px;
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(0,0,0,0.6); border-radius: 20px;
     padding: 4px 10px;
-    font-size: 0.6rem;
-    letter-spacing: 0.2em;
-    color: #fff;
-    opacity: 0;
-    transition: opacity 0.3s;
-    z-index: 10;
+    font-size: 0.6rem; letter-spacing: 0.2em; color: #fff;
+    opacity: 0; transition: opacity 0.3s; z-index: 10;
   }
 
   .rec-badge.visible { opacity: 1; }
 
   .rec-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
+    width: 8px; height: 8px; border-radius: 50%;
     background: var(--accent2);
     animation: blink 1s infinite;
   }
 
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
-  /* Timer */
-  .timer {
-    position: absolute;
-    top: 12px;
-    right: 12px;
+  .rec-timer {
+    position: absolute; top: 12px; right: 12px;
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.2rem;
-    color: #fff;
-    letter-spacing: 0.1em;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-    z-index: 10;
-    opacity: 0;
-    transition: opacity 0.3s;
+    font-size: 1.2rem; color: #fff; letter-spacing: 0.1em;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.9);
+    z-index: 10; opacity: 0; transition: opacity 0.3s;
   }
 
-  .timer.visible { opacity: 1; }
+  .rec-timer.visible { opacity: 1; }
 
   /* Buttons */
   .btn-area {
-    width: 100%;
-    max-width: 600px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    position: relative;
-    z-index: 1;
+    width: 100%; max-width: 600px;
+    display: flex; flex-direction: column; gap: 0.6rem;
+    position: relative; z-index: 1;
   }
 
   .btn-row { display: flex; gap: 0.6rem; }
 
   button {
-    flex: 1;
-    padding: 0.9rem 1rem;
-    border: none;
-    border-radius: 10px;
+    flex: 1; padding: 0.9rem 1rem;
+    border: none; border-radius: 10px;
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.1rem;
-    letter-spacing: 0.15em;
-    cursor: pointer;
-    transition: all 0.15s;
+    font-size: 1.1rem; letter-spacing: 0.15em;
+    cursor: pointer; transition: all 0.15s;
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -303,7 +202,30 @@
     background: var(--surface);
     color: var(--accent);
     border: 1px solid var(--accent);
-    box-shadow: none;
+  }
+
+  #btnFlip {
+    flex: 0 0 auto; padding: 0.9rem 1rem;
+    background: var(--surface); color: var(--text);
+    border: 1px solid var(--border);
+    font-size: 1.2rem;
+    display: none;
+  }
+
+  #btnFlip.visible { display: block; }
+
+  #btnPip {
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(124,58,237,0.25);
+    display: none;
+  }
+
+  #btnPip.visible { display: block; }
+  #btnPip.active {
+    background: var(--surface);
+    color: #a78bfa;
+    border: 1px solid #7c3aed;
   }
 
   #btnRecord {
@@ -318,147 +240,129 @@
     background: var(--surface);
     color: var(--accent2);
     border: 1px solid var(--accent2);
-    box-shadow: none;
   }
-
-  #btnFlip {
-    flex: 0 0 auto;
-    padding: 0.9rem;
-    background: var(--surface);
-    color: var(--text);
-    border: 1px solid var(--border);
-    font-size: 1.2rem;
-    display: none;
-  }
-
-  #btnFlip.visible { display: block; }
 
   .status {
-    font-size: 0.6rem;
-    color: var(--muted);
-    letter-spacing: 0.12em;
-    text-align: center;
-    position: relative;
-    z-index: 1;
-    line-height: 1.6;
+    font-size: 0.62rem; color: var(--muted);
+    letter-spacing: 0.12em; text-align: center;
+    line-height: 1.7;
+    position: relative; z-index: 1;
   }
 
-  .status span { color: var(--accent2); }
-  .status .ok { color: var(--green); }
+  .status .hi  { color: var(--accent2); }
+  .status .ok  { color: var(--green); }
+  .status .pip { color: #a78bfa; }
 
-  /* Download section */
+  /* How-to tip */
+  .tip {
+    width: 100%; max-width: 600px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid #7c3aed;
+    border-radius: 10px; padding: 0.8rem 1rem;
+    font-size: 0.6rem; color: var(--muted);
+    letter-spacing: 0.08em; line-height: 1.8;
+    position: relative; z-index: 1;
+    display: none;
+  }
+
+  .tip.visible { display: block; }
+  .tip strong { color: #a78bfa; font-weight: 700; }
+
+  /* Download */
   .download-card {
-    width: 100%;
-    max-width: 600px;
+    width: 100%; max-width: 600px;
     background: var(--surface);
     border: 1px solid var(--green);
-    border-radius: 12px;
-    padding: 1rem;
-    position: relative;
-    z-index: 1;
-    display: none;
+    border-radius: 12px; padding: 1rem;
     text-align: center;
+    position: relative; z-index: 1;
+    display: none;
   }
 
   .download-card.visible { display: block; }
 
-  .download-title {
+  .dl-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.2rem;
-    letter-spacing: 0.15em;
-    color: var(--green);
-    margin-bottom: 0.5rem;
+    font-size: 1.2rem; letter-spacing: 0.15em;
+    color: var(--green); margin-bottom: 0.4rem;
   }
 
-  .download-note {
-    font-size: 0.6rem;
-    color: var(--muted);
-    letter-spacing: 0.08em;
-    line-height: 1.7;
+  .dl-note {
+    font-size: 0.6rem; color: var(--muted);
+    letter-spacing: 0.08em; line-height: 1.7;
     margin-bottom: 0.8rem;
   }
 
   #btnDownload {
+    display: block; width: 100%; padding: 0.9rem;
     background: linear-gradient(135deg, var(--green), #00cc66);
-    color: #000;
-    font-size: 1rem;
+    color: #000; border: none; border-radius: 10px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem; letter-spacing: 0.15em;
+    cursor: pointer; text-decoration: none;
     box-shadow: 0 4px 16px rgba(0,255,136,0.2);
-    display: inline-block;
-    text-decoration: none;
-    width: 100%;
   }
 
-  /* Video preview for iOS */
-  #iosVideoPreview {
-    width: 100%;
-    border-radius: 8px;
-    margin-top: 0.5rem;
-    display: none;
+  #iosPreview {
+    width: 100%; border-radius: 8px;
+    margin-top: 0.6rem; display: none;
   }
 
-  #iosVideoPreview.visible { display: block; }
+  #iosPreview.visible { display: block; }
 
-  /* Hidden PiP video */
+  /* Hidden PiP video — in DOM so mobile PiP works */
   #pipVideo {
-    position: fixed;
-    top: -9999px; left: -9999px;
+    position: fixed; top: -9999px; left: -9999px;
     width: 1px; height: 1px;
-    opacity: 0;
-    pointer-events: none;
+    opacity: 0; pointer-events: none;
   }
+
+  /* Hidden canvas — renders teleprompter for PiP stream */
+  #tpCanvas { display: none; }
 </style>
 </head>
 <body>
 
 <header>
   <h1>TELEPROMPTER</h1>
-  <p class="subtitle">Câmera Integrada · Gravação · Android & iOS</p>
+  <p class="subtitle">PiP · Câmera Limpa · Gravação</p>
 </header>
 
-<!-- Setup -->
-<div class="setup-panel" id="setupPanel">
-  <div class="card">
-    <label>Roteiro</label>
-    <textarea id="script" placeholder="Cole seu roteiro aqui...
+<div class="card">
+  <label>Roteiro</label>
+  <textarea id="script" placeholder="Cole seu roteiro aqui...
 
-O texto vai rolar sobre o feed da câmera enquanto você grava."></textarea>
+O teleprompter vai rolar no PiP (janela flutuante). Posicione o celular com o PiP abaixo da câmera e leia enquanto grava."></textarea>
 
-    <div class="row">
-      <label>Velocidade</label>
-      <input type="range" id="speed" min="1" max="10" value="3">
-      <span class="val" id="speedVal">3</span>
-    </div>
+  <div class="row">
+    <label>Velocidade</label>
+    <input type="range" id="speed" min="1" max="10" value="3">
+    <span class="val" id="speedVal">3</span>
+  </div>
 
-    <div class="row">
-      <label>Tamanho</label>
-      <input type="range" id="fontSize" min="1" max="5" value="3">
-      <span class="val" id="fontSizeVal">3</span>
-    </div>
-
-    <div class="style-row">
-      <button class="style-btn active" data-pos="bottom">Texto Baixo</button>
-      <button class="style-btn" data-pos="center">Texto Centro</button>
-      <button class="style-btn" data-pos="top">Texto Topo</button>
-    </div>
+  <div class="row">
+    <label>Tamanho</label>
+    <input type="range" id="fontSize" min="1" max="5" value="3">
+    <span class="val" id="fontSizeVal">3</span>
   </div>
 </div>
 
-<!-- Camera preview (canvas over video) -->
-<div class="preview-area" id="previewArea">
+<!-- Camera feed — recorded clean, no text overlay -->
+<div class="camera-wrap" id="cameraWrap">
   <video id="cameraFeed" autoplay muted playsinline></video>
-  <canvas id="previewCanvas"></canvas>
-  <div class="rec-badge" id="recBadge">
-    <div class="rec-dot"></div>
-    REC
-  </div>
-  <div class="timer" id="timer">0:00</div>
+  <div class="rec-badge" id="recBadge"><div class="rec-dot"></div> REC</div>
+  <div class="rec-timer" id="recTimer">0:00</div>
 </div>
 
 <!-- Controls -->
 <div class="btn-area">
   <div class="btn-row">
     <button id="btnCamera">📷 ATIVAR CÂMERA</button>
-    <button id="btnFlip">🔄</button>
+    <button id="btnFlip" title="Virar câmera">🔄</button>
+  </div>
+  <div class="btn-row">
+    <button id="btnPip">⊡ ABRIR TELEPROMPTER (PiP)</button>
   </div>
   <div class="btn-row">
     <button id="btnRecord">⏺ GRAVAR</button>
@@ -467,94 +371,89 @@ O texto vai rolar sobre o feed da câmera enquanto você grava."></textarea>
 
 <p class="status" id="status">Ative a câmera para começar</p>
 
-<!-- Download -->
-<div class="download-card" id="downloadCard">
-  <div class="download-title">✅ Gravação Pronta!</div>
-  <p class="download-note" id="downloadNote"></p>
-  <a id="btnDownload" href="#" download="teleprompter.webm">⬇ SALVAR VÍDEO</a>
-  <video id="iosVideoPreview" controls playsinline></video>
+<div class="tip" id="tip">
+  💡 <strong>Como usar:</strong> Abra o PiP → o teleprompter aparece numa janela flutuante → posicione ela <strong>abaixo da câmera</strong> do celular → pressione Gravar. O vídeo exportado terá apenas a câmera, sem o texto.
 </div>
 
-<!-- Hidden video for PiP bridge -->
+<!-- Download section -->
+<div class="download-card" id="downloadCard">
+  <div class="dl-title">✅ Gravação Pronta!</div>
+  <p class="dl-note" id="dlNote"></p>
+  <a id="btnDownload" href="#">⬇ SALVAR VÍDEO</a>
+  <video id="iosPreview" controls playsinline></video>
+</div>
+
+<!-- Hidden canvas: renders teleprompter → feeds pipVideo stream -->
+<canvas id="tpCanvas"></canvas>
+
+<!-- Hidden video: bridges canvas stream to PiP API -->
 <video id="pipVideo" muted playsinline></video>
 
 <script>
 (function () {
-  // Elements
+  // ── Elements ─────────────────────────────────────────────────
   const scriptArea   = document.getElementById('script');
   const speedInput   = document.getElementById('speed');
   const speedValEl   = document.getElementById('speedVal');
   const fontSizeInput = document.getElementById('fontSize');
   const fontSizeValEl = document.getElementById('fontSizeVal');
-  const styleBtns    = document.querySelectorAll('.style-btn');
-  const previewArea  = document.getElementById('previewArea');
-  const canvas       = document.getElementById('previewCanvas');
-  const ctx          = canvas.getContext('2d');
+  const cameraWrap   = document.getElementById('cameraWrap');
   const cameraFeed   = document.getElementById('cameraFeed');
   const recBadge     = document.getElementById('recBadge');
-  const timerEl      = document.getElementById('timer');
+  const recTimer     = document.getElementById('recTimer');
   const btnCamera    = document.getElementById('btnCamera');
   const btnFlip      = document.getElementById('btnFlip');
+  const btnPip       = document.getElementById('btnPip');
   const btnRecord    = document.getElementById('btnRecord');
   const statusEl     = document.getElementById('status');
+  const tip          = document.getElementById('tip');
   const downloadCard = document.getElementById('downloadCard');
-  const downloadNote = document.getElementById('downloadNote');
+  const dlNote       = document.getElementById('dlNote');
   const btnDownload  = document.getElementById('btnDownload');
-  const iosPreview   = document.getElementById('iosVideoPreview');
+  const iosPreview   = document.getElementById('iosPreview');
+  const tpCanvas     = document.getElementById('tpCanvas');
+  const pipVideo     = document.getElementById('pipVideo');
+  const ctx          = tpCanvas.getContext('2d');
 
-  // State
+  // ── Canvas resolution (teleprompter — landscape 16:9 fits PiP window) ──
+  const CW = 960, CH = 540;
+  tpCanvas.width  = CW;
+  tpCanvas.height = CH;
+
+  // ── State ────────────────────────────────────────────────────
   let cameraStream   = null;
   let mediaRecorder  = null;
   let recordedChunks = [];
   let animId         = null;
   let scrollY        = 0;
   let lines          = [];
-  let isRunning      = false;
+  let tpRunning      = false;
   let isRecording    = false;
-  let facingMode     = 'user'; // front camera by default
+  let facingMode     = 'environment'; // back camera default
   let timerInterval  = null;
   let timerSecs      = 0;
-  let textPosition   = 'bottom'; // top | center | bottom
+  let tpStream       = null;
 
-  // Canvas sizing — portrait 9:16
-  const CW = 720, CH = 1280;
-  canvas.width  = CW;
-  canvas.height = CH;
+  const FONT_SIZES   = [28, 36, 44, 54, 66];
+  const LINE_H_MULT  = 1.55;
 
-  // Font size map
-  const FONT_SIZES = [28, 36, 44, 54, 66];
-  const LINE_H_MULT = 1.55;
+  // ── Helpers ──────────────────────────────────────────────────
+  function getFontSize() { return FONT_SIZES[parseInt(fontSizeInput.value) - 1]; }
+  function getLineH()    { return Math.round(getFontSize() * LINE_H_MULT); }
+  function getSpeed()    { return parseFloat(speedInput.value) * 0.5; }
 
-  function getFontSize() {
-    return FONT_SIZES[parseInt(fontSizeInput.value) - 1];
-  }
-
-  function getLineH() {
-    return Math.round(getFontSize() * LINE_H_MULT);
-  }
-
-  function getSpeed() {
-    return parseFloat(speedInput.value) * 0.6;
-  }
-
-  // ── Text wrapping ────────────────────────────────────────────
   function wrapText(text, maxWidth) {
     const fs = getFontSize();
     ctx.font = `bold ${fs}px 'Space Mono', monospace`;
-    const paragraphs = text.split('\n');
     const result = [];
-    paragraphs.forEach(para => {
+    text.split('\n').forEach(para => {
       if (para.trim() === '') { result.push(''); return; }
-      const words = para.split(' ');
       let line = '';
-      words.forEach(word => {
+      para.split(' ').forEach(word => {
         const test = line ? line + ' ' + word : word;
         if (ctx.measureText(test).width > maxWidth && line) {
-          result.push(line);
-          line = word;
-        } else {
-          line = test;
-        }
+          result.push(line); line = word;
+        } else { line = test; }
       });
       if (line) result.push(line);
     });
@@ -562,172 +461,197 @@ O texto vai rolar sobre o feed da câmera enquanto você grava."></textarea>
   }
 
   function buildLines() {
-    const PAD = 48;
-    lines = wrapText(scriptArea.value || '(sem roteiro)', CW - PAD * 2);
+    lines = wrapText(scriptArea.value || '(sem roteiro)', CW - 80);
   }
 
-  // ── Drawing ──────────────────────────────────────────────────
+  // ── Draw teleprompter frame onto hidden canvas ───────────────
   function drawFrame() {
-    ctx.clearRect(0, 0, CW, CH);
-
     const fs    = getFontSize();
     const lineH = getLineH();
-    const PAD   = 48;
 
-    // Text overlay background — semi-transparent strip
-    // Position anchor
-    let anchorY;
-    if (textPosition === 'top')    anchorY = 80;
-    else if (textPosition === 'center') anchorY = CH / 2 - (lines.length * lineH) / 2;
-    else                           anchorY = CH - 200; // bottom
-
-    // How many lines fit in the visible zone
-    const visibleLines = Math.ceil(CH / lineH) + 2;
-    const startLine    = Math.floor(scrollY / lineH);
-    const offsetY      = scrollY % lineH;
-
-    // Dark gradient behind text for readability
-    const overlayH = Math.min(lines.length * lineH + 80, CH);
-    const overlayGrad = ctx.createLinearGradient(0, 0, 0, overlayH);
-    overlayGrad.addColorStop(0,   'rgba(0,0,0,0)');
-    overlayGrad.addColorStop(0.1, 'rgba(0,0,0,0.55)');
-    overlayGrad.addColorStop(0.9, 'rgba(0,0,0,0.55)');
-    overlayGrad.addColorStop(1,   'rgba(0,0,0,0)');
-    ctx.fillStyle = overlayGrad;
+    ctx.fillStyle = '#0a0a0f';
     ctx.fillRect(0, 0, CW, CH);
 
-    // Text rendering
+    // Scanlines
+    for (let y = 0; y < CH; y += 4) {
+      ctx.fillStyle = 'rgba(0,229,255,0.015)';
+      ctx.fillRect(0, y, CW, 2);
+    }
+
+    // Center guide line
+    ctx.strokeStyle = 'rgba(0,229,255,0.25)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath();
+    ctx.moveTo(40, CH / 2);
+    ctx.lineTo(CW - 40, CH / 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Text
+    ctx.font = `bold ${fs}px 'Space Mono', monospace`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    ctx.font = `bold ${fs}px 'Space Mono', monospace`;
 
-    for (let i = 0; i < visibleLines; i++) {
-      const lineIndex = startLine + i;
-      if (lineIndex < 0 || lineIndex >= lines.length) continue;
+    const startY = CH / 2 - scrollY;
 
-      const rawY    = anchorY + i * lineH - offsetY;
-      const centerY = CH / 2;
-      const dist    = Math.abs(rawY + fs / 2 - centerY) / (CH / 2);
-      const alpha   = Math.max(0.15, 1 - dist * 1.1);
+    lines.forEach((line, i) => {
+      const y    = startY + i * lineH;
+      if (y < -lineH || y > CH + lineH) return;
 
-      // Shadow / glow
-      ctx.shadowColor = 'rgba(0,0,0,0.9)';
-      ctx.shadowBlur  = 6;
+      const dist  = Math.abs(y + fs / 2 - CH / 2) / (CH / 2);
+      const alpha = Math.max(0.12, 1 - dist * 1.15);
 
-      // Highlight the center-ish line
-      if (dist < 0.15) {
+      ctx.shadowBlur = 0;
+      ctx.fillStyle  = `rgba(232,232,240,${alpha})`;
+
+      if (dist < 0.14) {
         ctx.fillStyle  = '#ffffff';
-        ctx.shadowColor = 'rgba(0,229,255,0.6)';
-        ctx.shadowBlur  = 16;
-      } else {
-        ctx.fillStyle = `rgba(240,240,255,${alpha})`;
-        ctx.shadowBlur = 6;
+        ctx.shadowColor = '#00e5ff';
+        ctx.shadowBlur  = 20;
       }
 
-      ctx.fillText(lines[lineIndex], CW / 2, rawY);
-    }
+      ctx.fillText(line, CW / 2, y);
+    });
 
     ctx.shadowBlur = 0;
 
-    // Fade edges
-    const fadeTop = ctx.createLinearGradient(0, 0, 0, 140);
-    fadeTop.addColorStop(0, 'rgba(0,0,0,0.7)');
-    fadeTop.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = fadeTop;
-    ctx.fillRect(0, 0, CW, 140);
+    // Fade top/bottom
+    const gt = ctx.createLinearGradient(0, 0, 0, CH * 0.3);
+    gt.addColorStop(0, 'rgba(10,10,15,1)');
+    gt.addColorStop(1, 'rgba(10,10,15,0)');
+    ctx.fillStyle = gt;
+    ctx.fillRect(0, 0, CW, CH * 0.3);
 
-    const fadeBot = ctx.createLinearGradient(0, CH - 140, 0, CH);
-    fadeBot.addColorStop(0, 'rgba(0,0,0,0)');
-    fadeBot.addColorStop(1, 'rgba(0,0,0,0.7)');
-    ctx.fillStyle = fadeBot;
-    ctx.fillRect(0, CH - 140, CW, 140);
-
-    // Center line guide
-    ctx.strokeStyle = 'rgba(0,229,255,0.3)';
-    ctx.lineWidth   = 1.5;
-    ctx.setLineDash([6, 6]);
-    ctx.beginPath();
-    ctx.moveTo(PAD, CH / 2);
-    ctx.lineTo(CW - PAD, CH / 2);
-    ctx.stroke();
-    ctx.setLineDash([]);
+    const gb = ctx.createLinearGradient(0, CH * 0.7, 0, CH);
+    gb.addColorStop(0, 'rgba(10,10,15,0)');
+    gb.addColorStop(1, 'rgba(10,10,15,1)');
+    ctx.fillStyle = gb;
+    ctx.fillRect(0, CH * 0.7, CW, CH * 0.3);
   }
 
-  // ── Tick ─────────────────────────────────────────────────────
+  // ── Teleprompter scroll loop ─────────────────────────────────
   function tick() {
-    if (!isRunning) return;
-
+    if (!tpRunning) return;
     scrollY += getSpeed();
-    const maxScroll = lines.length * getLineH();
-    if (scrollY > maxScroll) scrollY = 0;
-
+    if (scrollY > lines.length * getLineH()) scrollY = -(CH / 2);
     drawFrame();
     animId = requestAnimationFrame(tick);
   }
 
-  function startScroll() {
+  function startTeleprompter() {
     buildLines();
-    scrollY = 0;
-    isRunning = true;
+    scrollY = -(CH / 2);
+    tpRunning = true;
+
+    // Setup canvas → pipVideo stream (done once)
+    if (!tpStream) {
+      tpStream = tpCanvas.captureStream(30);
+      pipVideo.srcObject = tpStream;
+    }
+
+    // Draw first frame so video is never grey
+    drawFrame();
+
+    // Play video (muted autoplay allowed without gesture)
+    pipVideo.play().catch(() => {});
+
     tick();
   }
 
-  function stopScroll() {
-    isRunning = false;
+  function stopTeleprompter() {
+    tpRunning = false;
     cancelAnimationFrame(animId);
     drawFrame();
   }
 
-  // ── Camera ───────────────────────────────────────────────────
-  async function startCamera() {
-    if (cameraStream) {
-      cameraStream.getTracks().forEach(t => t.stop());
-      cameraStream = null;
+  // ── PiP ──────────────────────────────────────────────────────
+  btnPip.addEventListener('click', async () => {
+    if (!tpRunning) startTeleprompter();
+
+    if (!document.pictureInPictureEnabled) {
+      statusEl.innerHTML = '<span class="hi">PiP não suportado neste browser</span>';
+      return;
+    }
+
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture();
+      return;
     }
 
     try {
+      // pipVideo already playing — call requestPictureInPicture synchronously
+      // inside the click event to keep user-gesture context on mobile
+      if (pipVideo.paused) {
+        const p1 = pipVideo.play();
+        const p2 = pipVideo.requestPictureInPicture();
+        await p1; await p2;
+      } else {
+        await pipVideo.requestPictureInPicture();
+      }
+    } catch (e) {
+      statusEl.innerHTML = `<span class="hi">Erro PiP: ${e.message}</span>`;
+    }
+  });
+
+  pipVideo.addEventListener('enterpictureinpicture', () => {
+    btnPip.textContent = '✕ FECHAR TELEPROMPTER (PiP)';
+    btnPip.classList.add('active');
+    statusEl.innerHTML = '<span class="pip">📺 PiP ativo!</span> Posicione abaixo da câmera e pressione <span class="hi">GRAVAR</span>';
+  });
+
+  pipVideo.addEventListener('leavepictureinpicture', () => {
+    btnPip.textContent = '⊡ ABRIR TELEPROMPTER (PiP)';
+    btnPip.classList.remove('active');
+    statusEl.innerHTML = 'PiP fechado — toque para reabrir';
+  });
+
+  // ── Camera ───────────────────────────────────────────────────
+  async function startCamera() {
+    if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); }
+
+    try {
       cameraStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
         audio: true
       });
       cameraFeed.srcObject = cameraStream;
       await cameraFeed.play();
 
-      previewArea.classList.add('visible');
+      cameraWrap.classList.add('visible');
       btnFlip.classList.add('visible');
+      btnPip.classList.add('visible');
       btnRecord.classList.add('visible');
+      tip.classList.add('visible');
       btnCamera.textContent = '⏹ PARAR CÂMERA';
       btnCamera.classList.add('active');
-
-      statusEl.innerHTML = 'Câmera ativa — pressione <span>GRAVAR</span> para iniciar';
-
-      startScroll();
+      statusEl.innerHTML = 'Câmera ativa — abra o <span class="pip">Teleprompter PiP</span> e posicione abaixo da câmera';
     } catch (e) {
-      statusEl.innerHTML = `<span>Erro ao acessar câmera: ${e.message}</span>`;
+      statusEl.innerHTML = `<span class="hi">Erro câmera: ${e.message}</span>`;
     }
   }
 
   function stopCamera() {
-    stopScroll();
-    stopRecordingIfActive();
+    stopTeleprompter();
+    if (isRecording) stopRecording();
 
-    if (cameraStream) {
-      cameraStream.getTracks().forEach(t => t.stop());
-      cameraStream = null;
-    }
-
+    if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
     cameraFeed.srcObject = null;
-    previewArea.classList.remove('visible');
+
+    if (document.pictureInPictureElement) document.exitPictureInPicture().catch(() => {});
+
+    cameraWrap.classList.remove('visible');
     btnFlip.classList.remove('visible');
+    btnPip.classList.remove('visible');
     btnRecord.classList.remove('visible');
+    tip.classList.remove('visible');
     btnCamera.textContent = '📷 ATIVAR CÂMERA';
     btnCamera.classList.remove('active');
     statusEl.innerHTML = 'Câmera desativada';
   }
 
   btnCamera.addEventListener('click', () => {
-    if (cameraStream) stopCamera();
-    else startCamera();
+    if (cameraStream) stopCamera(); else startCamera();
   });
 
   btnFlip.addEventListener('click', () => {
@@ -735,77 +659,57 @@ O texto vai rolar sobre o feed da câmera enquanto você grava."></textarea>
     if (cameraStream) startCamera();
   });
 
-  // ── Recording ────────────────────────────────────────────────
+  // ── Recording (camera only — no canvas overlay) ──────────────
   function getMimeType() {
-    // Prefer mp4 for broader compatibility, fallback to webm
     const types = [
-      'video/mp4;codecs=avc1',
-      'video/mp4',
-      'video/webm;codecs=vp9,opus',
-      'video/webm;codecs=vp8,opus',
-      'video/webm',
+      'video/mp4;codecs=avc1', 'video/mp4',
+      'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'
     ];
     return types.find(t => MediaRecorder.isTypeSupported(t)) || '';
   }
 
   function startRecording() {
     if (!cameraStream) return;
-
     recordedChunks = [];
     downloadCard.classList.remove('visible');
 
-    // Mix canvas stream + audio from camera
-    const canvasStream = canvas.captureStream(30);
-    const audioTracks  = cameraStream.getAudioTracks();
-    const combined     = new MediaStream([
-      ...canvasStream.getVideoTracks(),
-      ...audioTracks
-    ]);
-
+    // Record ONLY the camera stream — clean, no teleprompter
     const mimeType = getMimeType();
-    const options  = mimeType ? { mimeType } : {};
-
     try {
-      mediaRecorder = new MediaRecorder(combined, options);
+      mediaRecorder = new MediaRecorder(cameraStream, mimeType ? { mimeType } : {});
     } catch (e) {
-      statusEl.innerHTML = `<span>MediaRecorder não suportado: ${e.message}</span>`;
+      statusEl.innerHTML = `<span class="hi">Erro gravação: ${e.message}</span>`;
       return;
     }
 
-    mediaRecorder.ondataavailable = e => {
-      if (e.data && e.data.size > 0) recordedChunks.push(e.data);
-    };
-
-    mediaRecorder.onstop = () => {
-      buildDownload(mimeType);
-    };
-
-    mediaRecorder.start(100); // collect in 100ms chunks
+    mediaRecorder.ondataavailable = e => { if (e.data?.size > 0) recordedChunks.push(e.data); };
+    mediaRecorder.onstop = () => buildDownload(mimeType);
+    mediaRecorder.start(100);
     isRecording = true;
 
     // Timer
     timerSecs = 0;
-    timerEl.textContent = '0:00';
-    timerEl.classList.add('visible');
+    recTimer.textContent = '0:00';
+    recTimer.classList.add('visible');
     recBadge.classList.add('visible');
     timerInterval = setInterval(() => {
       timerSecs++;
       const m = Math.floor(timerSecs / 60);
       const s = String(timerSecs % 60).padStart(2, '0');
-      timerEl.textContent = `${m}:${s}`;
+      recTimer.textContent = `${m}:${s}`;
     }, 1000);
 
     btnRecord.textContent = '⏹ PARAR GRAVAÇÃO';
     btnRecord.classList.add('recording');
-    statusEl.innerHTML = '<span>● Gravando...</span> Pressione PARAR quando terminar';
+    statusEl.innerHTML = '<span class="hi">● Gravando...</span> câmera limpa · teleprompter só no PiP';
   }
 
-  function stopRecordingIfActive() {
+  function stopRecording() {
     if (!isRecording || !mediaRecorder) return;
     mediaRecorder.stop();
     isRecording = false;
     clearInterval(timerInterval);
-    timerEl.classList.remove('visible');
+    recTimer.classList.remove('visible');
     recBadge.classList.remove('visible');
     btnRecord.textContent = '⏺ GRAVAR';
     btnRecord.classList.remove('recording');
@@ -813,64 +717,44 @@ O texto vai rolar sobre o feed da câmera enquanto você grava."></textarea>
   }
 
   btnRecord.addEventListener('click', () => {
-    if (isRecording) stopRecordingIfActive();
-    else startRecording();
+    if (isRecording) stopRecording(); else startRecording();
   });
 
   // ── Build download ───────────────────────────────────────────
   function buildDownload(mimeType) {
-    const ext    = mimeType && mimeType.includes('mp4') ? 'mp4' : 'webm';
-    const mime   = mimeType || 'video/webm';
-    const blob   = new Blob(recordedChunks, { type: mime });
-    const url    = URL.createObjectURL(blob);
-    const isIOS  = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const ext  = mimeType?.includes('mp4') ? 'mp4' : 'webm';
+    const mime = mimeType || 'video/webm';
+    const blob = new Blob(recordedChunks, { type: mime });
+    const url  = URL.createObjectURL(blob);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
+    btnDownload.href     = url;
+    btnDownload.download = `gravacao.${ext}`;
     downloadCard.classList.add('visible');
 
     if (isIOS) {
-      // iOS Safari: show inline video + share instructions
       iosPreview.src = url;
       iosPreview.classList.add('visible');
-      btnDownload.href = url;
-      btnDownload.download = `teleprompter.${ext}`;
       btnDownload.textContent = '⬇ SALVAR / COMPARTILHAR';
-      downloadNote.innerHTML =
-        `<strong style="color:var(--accent)">iOS:</strong> Toque em "Salvar / Compartilhar" e escolha <em>Salvar em Arquivos</em> ou <em>Salvar Vídeo</em> para a Fototeca.`;
+      dlNote.innerHTML = '<strong style="color:var(--accent)">iOS:</strong> Toque em "Salvar / Compartilhar" → <em>Salvar em Arquivos</em> ou <em>Salvar Vídeo</em> na Fototeca.';
     } else {
-      // Android / Desktop: direct download
       iosPreview.classList.remove('visible');
-      btnDownload.href = url;
-      btnDownload.download = `teleprompter.${ext}`;
       btnDownload.textContent = '⬇ SALVAR VÍDEO';
-      downloadNote.innerHTML =
-        `Vídeo pronto! Toque no botão para salvar em <strong style="color:var(--accent)">Downloads</strong>.`;
-
-      // Auto-trigger download on Android
+      dlNote.innerHTML = 'Vídeo pronto! Toque para salvar em <strong style="color:var(--accent)">Downloads</strong>.';
       btnDownload.click();
     }
 
-    statusEl.innerHTML = '<span class="ok">✓ Pronto!</span> Seu vídeo está disponível abaixo';
+    statusEl.innerHTML = '<span class="ok">✓ Pronto!</span> Vídeo disponível abaixo — apenas câmera, sem texto';
   }
 
-  // ── UI controls ──────────────────────────────────────────────
-  speedInput.addEventListener('input', () => {
-    speedValEl.textContent = speedInput.value;
-  });
-
+  // ── UI ───────────────────────────────────────────────────────
+  speedInput.addEventListener('input',    () => { speedValEl.textContent = speedInput.value; });
   fontSizeInput.addEventListener('input', () => {
     fontSizeValEl.textContent = fontSizeInput.value;
-    if (isRunning) buildLines();
+    if (tpRunning) buildLines();
   });
 
-  styleBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      styleBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      textPosition = btn.dataset.pos;
-    });
-  });
-
-  // Initial frame
+  // Initial static frame
   buildLines();
   drawFrame();
 })();
