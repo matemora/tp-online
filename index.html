@@ -32,7 +32,15 @@
         const startBtn = document.getElementById('startBtn');
 
         let yPos = canvas.height;
-        const video = document.createElement('video');
+                // Crie o vídeo globalmente e configure-o para mobile
+const video = document.createElement('video');
+video.muted = true;
+video.playsInline = true; // Essencial para iOS/Android
+video.style.position = 'fixed';
+video.style.top = '-100px'; // Joga para fora da tela
+video.style.width = '1px';
+video.style.height = '1px';
+document.body.appendChild(video); // Adiciona ao DOM
         video.muted = true;
 
         function drawText() {
@@ -82,25 +90,31 @@
             return lines;
         }
 
-        startBtn.addEventListener('click', async () => {
-    // 1. Inicia o desenho no canvas (se ainda não começou)
-    drawText();
 
-    // 2. Captura o stream
+startBtn.addEventListener('click', async () => {
+    drawText(); // Inicia a animação do canvas
+
     const stream = canvas.captureStream(30);
     video.srcObject = stream;
 
-    // 3. Aguarda o vídeo carregar os metadados antes de pedir o PiP
-    video.onloadedmetadata = async () => {
+    // No Mobile, precisamos dar o play() IMEDIATAMENTE após o clique
+    await video.play();
+
+    // Pequeno delay para o stream "encher" o buffer do vídeo no mobile
+    setTimeout(async () => {
         try {
-            await video.play();
-            await video.requestPictureInPicture();
+            if (document.pictureInPictureEnabled) {
+                await video.requestPictureInPicture();
+            } else {
+                alert("Seu navegador não suporta PiP.");
+            }
         } catch (error) {
-            console.error("Erro ao ativar PiP:", error);
-            alert("Erro ao ativar o modo flutuante. Tente clicar novamente.");
+            console.error(error);
+            alert("Erro no Mobile: Verifique se você está usando HTTPS.");
         }
-    };
+    }, 100); 
 });
+
     </script>
 </body>
 </html>
