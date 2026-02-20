@@ -25,96 +25,118 @@
     <canvas id="tpCanvas" width="400" height="300"></canvas>
 
     <script>
-        const canvas = document.getElementById('tpCanvas');
-        const ctx = canvas.getContext('2d');
-        const textInput = document.getElementById('textInput');
-        const speedRange = document.getElementById('speedRange');
-        const startBtn = document.getElementById('startBtn');
-
-        let yPos = canvas.height;
-                // Crie o vídeo globalmente e configure-o para mobile
+        // 1. Configuração Global do Elemento de Vídeo (Obrigatório para Mobile)
 const video = document.createElement('video');
 video.muted = true;
-video.playsInline = true; // Essencial para iOS/Android
-video.style.position = 'fixed';
-video.style.top = '-100px'; // Joga para fora da tela
-video.style.width = '1px';
-video.style.height = '1px';
-document.body.appendChild(video); // Adiciona ao DOM
-        video.muted = true;
+video.playsInline = true; 
+video.setAttribute('autoplay', '');
+video.setAttribute('muted', '');
 
-        function drawText() {
-            // Fundo preto
-            ctx.fillStyle = "black";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+// O vídeo precisa estar no DOM para o Mobile aceitar o PiP, mas deixamos invisível
+video.style.cssText = "position:fixed; bottom:0; right:0; width:10px; height:10px; z-index:-1; opacity:0.01; pointer-events:none;";
+document.body.appendChild(video);
 
-            // Configuração do Texto
-            ctx.fillStyle = "white";
-            ctx.font = "24px Arial";
-            ctx.textAlign = "center";
+const canvas = document.getElementById('tpCanvas');
+const ctx = canvas.getContext('2d');
+const textInput = document.getElementById('textInput');
+const speedRange = document.getElementById('speedRange');
+const startBtn = document.getElementById('startBtn');
 
-            const lines = wrapText(textInput.value, 360);
-            
-            lines.forEach((line, index) => {
-                ctx.fillText(line, canvas.width / 2, yPos + (index * 30));
-            });
+let yPos = canvas.height;
+let animationId = null;
 
-            // Movimento
-            yPos -= parseFloat(speedRange.value);
+// 2. Função de Renderização do Teleprompter
+function drawText() {
+    // Fundo preto e limpeza
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Resetar posição quando o texto acabar
-            if (yPos < -(lines.length * 30)) {
-                yPos = canvas.height;
-            }
+    // Configuração do Texto
+    ctx.fillStyle = "white";
+    ctx.font = "bold 24px Arial";
+    ctx.textAlign = "center";
 
-            requestAnimationFrame(drawText);
-        }
+    const lines = wrapText(textInput.value, 360);
+    
+    lines.forEach((line, index) => {
+        ctx.fillText(line, canvas.width / 2, yPos + (index * 35));
+    });
 
-        // Função auxiliar para quebrar linhas no canvas
-        function wrapText(text, maxWidth) {
-            const words = text.split(' ');
-            let lines = [];
-            let currentLine = words[0];
+    // Ajuste de Velocidade
+    yPos -= parseFloat(speedRange.value);
 
-            for (let i = 1; i < words.length; i++) {
-                let word = words[i];
-                let width = ctx.measureText(currentLine + " " + word).width;
-                if (width < maxWidth) {
-                    currentLine += " " + word;
-                } else {
-                    lines.push(currentLine);
-                    currentLine = word;
-                }
-            }
+    // Loop infinito do texto
+    if (yPos < -(lines.length * 35)) {
+        yPos = canvas.height;
+    }
+
+    animationId = requestAnimationFrame(drawText);
+}
+
+// 3. Função Auxiliar para Quebrar Linhas
+function wrapText(text, maxWidth) {
+    const words = text.split(' ');
+    let lines = [];
+    let currentLine = words[0];
+
+    for (let i = 1; i < words.length; i++) {
+        let word = words[i];
+        let width = ctx.measureText(currentLine + " " + word).width;
+        if (width < maxWidth) {
+            currentLine += " " + word;
+        } else {
             lines.push(currentLine);
-            return lines;
+            currentLine = word;
         }
+    }
+    lines.push(currentLine);
+    return lines;
+}
 
+// 4. Lógica Principal de Ativação do PiP
+async function ativarTeleprompter() {
+    // Reinicia a posição se já estava rodando
+    if (animationId) cancelAnimationFrame(animationId);
+    yPos = canvas.height;
+    drawText();
 
-startBtn.addEventListener('click', async () => {
-    drawText(); // Inicia a animação do canvas
-
+    // Captura o stream do canvas (30 quadros por segundo)
     const stream = canvas.captureStream(30);
     video.srcObject = stream;
 
-    // No Mobile, precisamos dar o play() IMEDIATAMENTE após o clique
-    await video.play();
+    try {
+        // Passo crítico para Mobile: Play imediato após o clique
+        await video.play();
 
-    // Pequeno delay para o stream "encher" o buffer do vídeo no mobile
-    setTimeout(async () => {
-        try {
-            if (document.pictureInPictureEnabled) {
-                await video.requestPictureInPicture();
-            } else {
-                alert("Seu navegador não suporta PiP.");
+        // Aguarda o stream "aquecer" no buffer do vídeo
+        video.onloadedmetadata = async () => {
+            try {
+                if (document.pictureInPictureEnabled) {
+                    await video.requestPictureInPicture();
+                } else {
+                    alert("Seu navegador ou dispositivo não suporta a função de tela flutuante (PiP).");
+                }
+            } catch (err) {
+                console.error("Erro ao solicitar PiP:", err);
+                alert("Erro: O navegador bloqueou a janela. Tente clicar novamente.");
             }
-        } catch (error) {
-            console.error(error);
-            alert("Erro no Mobile: Verifique se você está usando HTTPS.");
-        }
-    }, 100); 
-});
+        };
 
+        // Fallback caso o onloadedmetadata demore demais (comum em alguns Androids)
+        setTimeout(async () => {
+            if (!document.pictureInPictureElement) {
+                await video.requestPictureInPicture().catch(() => {});
+            }
+        }, 500);
+
+    } catch (error) {
+        console.error("Erro ao iniciar vídeo:", error);
+        alert("Certifique-se de estar usando Chrome/Safari e que o site esteja em HTTPS.");
+    }
+}
+
+// Evento de Clique
+startBtn.addEventListener('click', ativarTeleprompter);
     </script>
 </body>
 </html>
