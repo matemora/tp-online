@@ -487,17 +487,33 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
     }
 
     try {
-      // Ensure video is playing (required for mobile)
-      await video.play();
+      // Play and immediately request PiP — both must happen synchronously
+      // within the same user gesture. Awaiting play() first loses the activation context.
+      const playPromise = video.play();
+      // Request PiP right away, before any await, so the browser still
+      // considers this a direct user-gesture call.
+      const pipPromise = video.requestPictureInPicture();
 
-      // Small delay for mobile buffer
-      await new Promise(r => setTimeout(r, 200));
+      // Now we can await both — errors are caught below
+      await playPromise;
+      await pipPromise;
 
-      await video.requestPictureInPicture();
       statusEl.innerHTML = '📺 <span>Modo PiP ativo!</span> Feche para voltar';
     } catch (err) {
       console.error('PiP error:', err);
-      statusEl.innerHTML = `<span>Erro PiP: ${err.message}</span>`;
+      // Fallback: some browsers need the video to be playing first.
+      // Try again after a short wait if it was a NotAllowedError on play.
+      if (err.name === 'NotAllowedError' || err.name === 'InvalidStateError') {
+        try {
+          await video.play();
+          await video.requestPictureInPicture();
+          statusEl.innerHTML = '📺 <span>Modo PiP ativo!</span> Feche para voltar';
+        } catch (err2) {
+          statusEl.innerHTML = `<span>Erro PiP: ${err2.message}</span>`;
+        }
+      } else {
+        statusEl.innerHTML = `<span>Erro PiP: ${err.message}</span>`;
+      }
     }
   });
 
