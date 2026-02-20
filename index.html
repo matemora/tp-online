@@ -436,11 +436,19 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
     btnPip.disabled = false;
     statusEl.innerHTML = 'Rodando — toque em <span>PiP</span> para janela flutuante';
 
-    // Setup stream
+    // Setup stream and start playing video BEFORE PiP is requested
+    // This ensures the video has active frames (non-grey) when PiP opens
     if (!stream) {
       stream = canvas.captureStream(30);
       video.srcObject = stream;
     }
+
+    // Draw a first frame immediately so the stream has content
+    drawFrame();
+
+    // Play video right away — muted autoplay is allowed without user gesture
+    // so the video is already buffering frames by the time the user taps PiP
+    video.play().catch(() => {});
 
     tick();
   }
@@ -487,33 +495,23 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
     }
 
     try {
-      // Play and immediately request PiP — both must happen synchronously
-      // within the same user gesture. Awaiting play() first loses the activation context.
-      const playPromise = video.play();
-      // Request PiP right away, before any await, so the browser still
-      // considers this a direct user-gesture call.
-      const pipPromise = video.requestPictureInPicture();
-
-      // Now we can await both — errors are caught below
-      await playPromise;
-      await pipPromise;
+      // Video is already playing from startPrompter(), so we just request PiP.
+      // Calling requestPictureInPicture() directly (no await before it) keeps us
+      // inside the user-gesture context, avoiding the "not triggered by user activation" error.
+      // If video somehow paused, play() and pipRequest are fired synchronously together.
+      if (video.paused) {
+        const playPromise = video.play();
+        const pipPromise = video.requestPictureInPicture();
+        await playPromise;
+        await pipPromise;
+      } else {
+        await video.requestPictureInPicture();
+      }
 
       statusEl.innerHTML = '📺 <span>Modo PiP ativo!</span> Feche para voltar';
     } catch (err) {
       console.error('PiP error:', err);
-      // Fallback: some browsers need the video to be playing first.
-      // Try again after a short wait if it was a NotAllowedError on play.
-      if (err.name === 'NotAllowedError' || err.name === 'InvalidStateError') {
-        try {
-          await video.play();
-          await video.requestPictureInPicture();
-          statusEl.innerHTML = '📺 <span>Modo PiP ativo!</span> Feche para voltar';
-        } catch (err2) {
-          statusEl.innerHTML = `<span>Erro PiP: ${err2.message}</span>`;
-        }
-      } else {
-        statusEl.innerHTML = `<span>Erro PiP: ${err.message}</span>`;
-      }
+      statusEl.innerHTML = `<span>Erro PiP: ${err.message}</span>`;
     }
   });
 
