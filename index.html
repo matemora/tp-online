@@ -32,17 +32,13 @@
     overflow-x: hidden;
   }
 
-  /* Scanline background effect */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
     background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,229,255,0.015) 2px,
-      rgba(0,229,255,0.015) 4px
+      0deg, transparent, transparent 2px,
+      rgba(0,229,255,0.015) 2px, rgba(0,229,255,0.015) 4px
     );
     pointer-events: none;
     z-index: 0;
@@ -120,7 +116,7 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    margin-top: 0.3rem;
+    margin-top: 1rem;
   }
 
   .speed-label {
@@ -160,8 +156,11 @@
     cursor: pointer;
   }
 
-  /* Canvas preview */
-  .preview-wrap {
+  /* Canvas oculto — apenas fonte do stream */
+  canvas { display: none; }
+
+  /* Player de vídeo com controles nativos */
+  .video-wrap {
     width: 100%;
     max-width: 600px;
     aspect-ratio: 16/9;
@@ -173,66 +172,63 @@
     background: #000;
   }
 
-  canvas {
+  video {
     width: 100%;
     height: 100%;
     display: block;
+    object-fit: cover;
   }
 
-  /* Hidden video - in DOM but invisible */
-  video {
-    position: fixed;
-    top: -9999px;
-    left: -9999px;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
+  .video-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
     pointer-events: none;
+    transition: opacity 0.4s;
   }
 
-  /* Buttons */
+  .video-placeholder.hidden { opacity: 0; }
+  .placeholder-icon { font-size: 3rem; opacity: 0.2; line-height: 1; }
+
+  /* Botão iniciar */
   .btn-row {
     width: 100%;
     max-width: 600px;
-    display: flex;
-    gap: 0.8rem;
     position: relative;
     z-index: 1;
   }
 
-  button {
-    flex: 1;
+  #btnStart {
+    width: 100%;
     padding: 1rem;
     border: none;
     border-radius: 10px;
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.2rem;
-    letter-spacing: 0.15em;
+    font-size: 1.3rem;
+    letter-spacing: 0.2em;
     cursor: pointer;
     transition: all 0.15s;
     -webkit-tap-highlight-color: transparent;
-  }
-
-  #btnStart {
     background: linear-gradient(135deg, var(--accent), #0099bb);
     color: #000;
     box-shadow: 0 4px 20px rgba(0,229,255,0.25);
   }
 
-  #btnStart:active { transform: scale(0.97); }
-  #btnStart.running { background: linear-gradient(135deg, var(--accent2), #cc003a); color: #fff; box-shadow: 0 4px 20px rgba(255,77,109,0.25); }
+  #btnStart:active { transform: scale(0.98); }
 
-  #btnPip {
-    background: var(--surface);
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    flex: 0 0 auto;
-    padding: 1rem 1.2rem;
-    font-size: 1rem;
+  #btnStart.running {
+    background: linear-gradient(135deg, var(--accent2), #cc003a);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(255,77,109,0.25);
   }
-
-  #btnPip:active { transform: scale(0.97); }
-  #btnPip:disabled { opacity: 0.3; cursor: not-allowed; }
 
   .status {
     font-size: 0.65rem;
@@ -243,9 +239,35 @@
     z-index: 1;
   }
 
-  .status span {
-    color: var(--accent2);
+  .status span { color: var(--accent2); }
+
+  .pip-tip {
+    width: 100%;
+    max-width: 600px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    line-height: 1.7;
+    position: relative;
+    z-index: 1;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.4s, transform 0.4s;
+    pointer-events: none;
   }
+
+  .pip-tip.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .pip-tip strong { color: var(--accent); font-weight: 700; }
 </style>
 </head>
 <body>
@@ -258,44 +280,53 @@
 <div class="card">
   <label>Roteiro</label>
   <textarea id="script" placeholder="Cole seu roteiro aqui...
-O texto vai rolar automaticamente no canvas abaixo e no modo Picture-in-Picture.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."></textarea>
+O texto vai rolar no vídeo abaixo. Para ativar Picture-in-Picture, toque no vídeo e use o botão PiP nativo do seu dispositivo.
 
-  <div class="controls-row" style="margin-top:1rem;">
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam."></textarea>
+
+  <div class="controls-row">
     <span class="speed-label">Velocidade</span>
     <input type="range" id="speed" min="1" max="10" value="3">
     <span class="speed-value" id="speedVal">3</span>
   </div>
 </div>
 
-<div class="preview-wrap">
-  <canvas id="prompterCanvas"></canvas>
+<!-- Canvas oculto: renderiza o teleprompter, alimenta o vídeo via captureStream -->
+<canvas id="prompterCanvas"></canvas>
+
+<!-- Vídeo com controls nativos — o browser já expõe o botão PiP no player -->
+<div class="video-wrap">
+  <video id="pipVideo" muted playsinline controls></video>
+  <div class="video-placeholder" id="placeholder">
+    <span class="placeholder-icon">⬛</span>
+    <span>Pressione INICIAR</span>
+  </div>
 </div>
 
 <div class="btn-row">
   <button id="btnStart">▶ INICIAR</button>
-  <button id="btnPip" disabled title="Picture-in-Picture">⊡ PiP</button>
 </div>
 
-<p class="status" id="status">Pressione <span>INICIAR</span> para começar</p>
+<p class="status" id="status">Configure o roteiro e pressione <span>INICIAR</span></p>
 
-<!-- Video element must be in DOM for mobile PiP -->
-<video id="pipVideo" muted playsinline autoplay></video>
+<div class="pip-tip" id="pipTip">
+  💡 <strong>PiP:</strong> Toque no vídeo para ver os controles. O botão Picture-in-Picture fica no canto do player (ícone de retângulo com seta). No <strong>iOS</strong>: entre em tela cheia e depois pressione PiP, ou minimize o Safari.
+</div>
 
 <script>
-(function() {
+(function () {
   const canvas = document.getElementById('prompterCanvas');
   const ctx = canvas.getContext('2d');
   const video = document.getElementById('pipVideo');
   const btnStart = document.getElementById('btnStart');
-  const btnPip = document.getElementById('btnPip');
   const speedInput = document.getElementById('speed');
-  const speedVal = document.getElementById('speedVal');
+  const speedValEl = document.getElementById('speedVal');
   const scriptArea = document.getElementById('script');
   const statusEl = document.getElementById('status');
+  const placeholder = document.getElementById('placeholder');
+  const pipTip = document.getElementById('pipTip');
 
-  // Canvas internal resolution
   const W = 960, H = 540;
   canvas.width = W;
   canvas.height = H;
@@ -305,7 +336,6 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
   let scrollY = 0;
   let stream = null;
   let lines = [];
-  let totalTextHeight = 0;
 
   const PADDING = 60;
   const LINE_HEIGHT = 52;
@@ -338,34 +368,20 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
 
   function buildLines() {
     ctx.font = `${FONT_SIZE}px 'Space Mono', monospace`;
-    const maxWidth = W - PADDING * 2;
-    lines = wrapText(scriptArea.value || 'Sem roteiro. Adicione seu texto!', maxWidth);
-    totalTextHeight = lines.length * LINE_HEIGHT + H; // extra H for smooth loop entry
+    lines = wrapText(scriptArea.value || 'Adicione seu roteiro!', W - PADDING * 2);
   }
 
   function drawFrame() {
-    ctx.clearRect(0, 0, W, H);
-
-    // Background
     ctx.fillStyle = '#0a0a0f';
     ctx.fillRect(0, 0, W, H);
 
-    // Scanlines
+    // Scanlines sutis
     for (let y = 0; y < H; y += 4) {
       ctx.fillStyle = 'rgba(0,229,255,0.015)';
       ctx.fillRect(0, y, W, 2);
     }
 
-    // Gradient masks top/bottom
-    const gradTop = ctx.createLinearGradient(0, 0, 0, H * 0.25);
-    gradTop.addColorStop(0, 'rgba(10,10,15,1)');
-    gradTop.addColorStop(1, 'rgba(10,10,15,0)');
-
-    const gradBot = ctx.createLinearGradient(0, H * 0.75, 0, H);
-    gradBot.addColorStop(0, 'rgba(10,10,15,0)');
-    gradBot.addColorStop(1, 'rgba(10,10,15,1)');
-
-    // Center line indicator
+    // Linha guia central
     ctx.strokeStyle = 'rgba(0,229,255,0.25)';
     ctx.lineWidth = 2;
     ctx.setLineDash([8, 8]);
@@ -375,29 +391,22 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Draw text
+    // Texto
     ctx.font = `${FONT_SIZE}px 'Space Mono', monospace`;
     ctx.textAlign = 'center';
 
-    const startY = H / 2 - scrollY;
-
     lines.forEach((line, i) => {
-      const y = startY + i * LINE_HEIGHT;
+      const y = (H / 2 - scrollY) + i * LINE_HEIGHT;
       if (y < -LINE_HEIGHT || y > H + LINE_HEIGHT) return;
 
-      // Distance from center determines brightness
       const dist = Math.abs(y - H / 2) / (H / 2);
-      const alpha = Math.max(0.15, 1 - dist * 1.2);
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = `rgba(232,232,240,${Math.max(0.12, 1 - dist * 1.2)})`;
 
-      ctx.fillStyle = `rgba(232,232,240,${alpha})`;
-
-      // Highlight center line
       if (dist < 0.12) {
         ctx.fillStyle = '#ffffff';
         ctx.shadowColor = '#00e5ff';
-        ctx.shadowBlur = 18;
-      } else {
-        ctx.shadowBlur = 0;
+        ctx.shadowBlur = 20;
       }
 
       ctx.fillText(line, W / 2, y);
@@ -405,49 +414,46 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
 
     ctx.shadowBlur = 0;
 
-    // Fade overlays
-    ctx.fillStyle = gradTop;
-    ctx.fillRect(0, 0, W, H * 0.3);
-    ctx.fillStyle = gradBot;
-    ctx.fillRect(0, H * 0.7, W, H * 0.3);
+    // Fade topo/base
+    const gt = ctx.createLinearGradient(0, 0, 0, H * 0.32);
+    gt.addColorStop(0, 'rgba(10,10,15,1)');
+    gt.addColorStop(1, 'rgba(10,10,15,0)');
+    const gb = ctx.createLinearGradient(0, H * 0.68, 0, H);
+    gb.addColorStop(0, 'rgba(10,10,15,0)');
+    gb.addColorStop(1, 'rgba(10,10,15,1)');
+    ctx.fillStyle = gt; ctx.fillRect(0, 0, W, H * 0.32);
+    ctx.fillStyle = gb; ctx.fillRect(0, H * 0.68, W, H * 0.32);
   }
 
   function tick() {
     if (!running) return;
-
     scrollY += getSpeed();
-
-    // Loop: when last line passes center, reset
-    const maxScroll = lines.length * LINE_HEIGHT;
-    if (scrollY > maxScroll) {
-      scrollY = -H / 2;
-    }
-
+    if (scrollY > lines.length * LINE_HEIGHT) scrollY = -H / 2;
     drawFrame();
     animId = requestAnimationFrame(tick);
   }
 
   function startPrompter() {
     buildLines();
-    scrollY = -H / 2; // start with text off-screen below center
+    scrollY = -H / 2;
     running = true;
+
     btnStart.textContent = '⏹ PARAR';
     btnStart.classList.add('running');
-    btnPip.disabled = false;
-    statusEl.innerHTML = 'Rodando — toque em <span>PiP</span> para janela flutuante';
+    statusEl.innerHTML = 'Rodando — toque no vídeo e use o botão <span>PiP nativo</span>';
+    placeholder.classList.add('hidden');
+    pipTip.classList.add('visible');
 
-    // Setup stream and start playing video BEFORE PiP is requested
-    // This ensures the video has active frames (non-grey) when PiP opens
+    // Conecta canvas → vídeo via captureStream
     if (!stream) {
       stream = canvas.captureStream(30);
       video.srcObject = stream;
     }
 
-    // Draw a first frame immediately so the stream has content
+    // Primeiro frame antes do play garante que o vídeo não abre cinza no PiP
     drawFrame();
 
-    // Play video right away — muted autoplay is allowed without user gesture
-    // so the video is already buffering frames by the time the user taps PiP
+    // play() funciona sem gesto do usuário pois o vídeo é muted
     video.play().catch(() => {});
 
     tick();
@@ -458,79 +464,33 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
     cancelAnimationFrame(animId);
     btnStart.textContent = '▶ INICIAR';
     btnStart.classList.remove('running');
-    btnPip.disabled = true;
-    statusEl.innerHTML = 'Pausado. Pressione <span>INICIAR</span> para continuar';
+    statusEl.innerHTML = 'Pausado — pressione <span>INICIAR</span> para continuar';
 
-    // Exit PiP if active
     if (document.pictureInPictureElement) {
       document.exitPictureInPicture().catch(() => {});
     }
 
-    // Draw static frame
     drawFrame();
   }
 
   btnStart.addEventListener('click', () => {
-    if (running) {
-      stopPrompter();
-    } else {
-      startPrompter();
-    }
+    if (running) stopPrompter();
+    else startPrompter();
   });
 
-  // PiP Button - must happen in user gesture context
-  btnPip.addEventListener('click', async () => {
-    if (!running) return;
-
-    // Check support
-    if (!document.pictureInPictureEnabled) {
-      statusEl.innerHTML = '<span>PiP não suportado neste navegador</span>';
-      return;
-    }
-
-    if (document.pictureInPictureElement) {
-      await document.exitPictureInPicture();
-      statusEl.innerHTML = 'PiP desativado';
-      return;
-    }
-
-    try {
-      // Video is already playing from startPrompter(), so we just request PiP.
-      // Calling requestPictureInPicture() directly (no await before it) keeps us
-      // inside the user-gesture context, avoiding the "not triggered by user activation" error.
-      // If video somehow paused, play() and pipRequest are fired synchronously together.
-      if (video.paused) {
-        const playPromise = video.play();
-        const pipPromise = video.requestPictureInPicture();
-        await playPromise;
-        await pipPromise;
-      } else {
-        await video.requestPictureInPicture();
-      }
-
-      statusEl.innerHTML = '📺 <span>Modo PiP ativo!</span> Feche para voltar';
-    } catch (err) {
-      console.error('PiP error:', err);
-      statusEl.innerHTML = `<span>Erro PiP: ${err.message}</span>`;
-    }
+  speedInput.addEventListener('input', () => {
+    speedValEl.textContent = speedInput.value;
   });
 
-  // PiP events
   video.addEventListener('enterpictureinpicture', () => {
-    btnPip.textContent = '✕ PiP';
+    statusEl.innerHTML = '📺 <span>PiP ativo!</span> Teleprompter flutuando';
   });
 
   video.addEventListener('leavepictureinpicture', () => {
-    btnPip.textContent = '⊡ PiP';
-    statusEl.innerHTML = 'PiP fechado — rodando no canvas';
+    statusEl.innerHTML = 'PiP fechado — toque no vídeo para reabrir';
   });
 
-  // Speed display
-  speedInput.addEventListener('input', () => {
-    speedVal.textContent = speedInput.value;
-  });
-
-  // Initial static frame
+  // Frame inicial estático
   buildLines();
   drawFrame();
 })();
