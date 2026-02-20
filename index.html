@@ -1,142 +1,525 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web PiP Teleprompter</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; line-height: 1.6; background: #f4f4f4; }
-        textarea { width: 100%; height: 150px; margin-bottom: 10px; border-radius: 8px; padding: 10px; }
-        .controls { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-        button { padding: 15px; background: #007bff; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        canvas { display: none; } /* O canvas não precisa aparecer na página */
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Teleprompter PiP</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #2a2a3e;
+    --accent: #00e5ff;
+    --accent2: #ff4d6d;
+    --text: #e8e8f0;
+    --muted: #5a5a7a;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 1rem 2rem;
+    gap: 1.2rem;
+    overflow-x: hidden;
+  }
+
+  /* Scanline background effect */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,229,255,0.015) 2px,
+      rgba(0,229,255,0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.2rem, 8vw, 3.5rem);
+    letter-spacing: 0.15em;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+
+  .subtitle {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-top: 0.3rem;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 600px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  label {
+    display: block;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  textarea {
+    width: 100%;
+    height: 180px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    padding: 0.8rem;
+    resize: vertical;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,229,255,0.08);
+  }
+
+  .controls-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.3rem;
+  }
+
+  .speed-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .speed-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    color: var(--accent2);
+    min-width: 2.5rem;
+    text-align: right;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+    cursor: pointer;
+  }
+
+  /* Canvas preview */
+  .preview-wrap {
+    width: 100%;
+    max-width: 600px;
+    aspect-ratio: 16/9;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    position: relative;
+    z-index: 1;
+    background: #000;
+  }
+
+  canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* Hidden video - in DOM but invisible */
+  video {
+    position: fixed;
+    top: -9999px;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Buttons */
+  .btn-row {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    gap: 0.8rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  button {
+    flex: 1;
+    padding: 1rem;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #btnStart {
+    background: linear-gradient(135deg, var(--accent), #0099bb);
+    color: #000;
+    box-shadow: 0 4px 20px rgba(0,229,255,0.25);
+  }
+
+  #btnStart:active { transform: scale(0.97); }
+  #btnStart.running { background: linear-gradient(135deg, var(--accent2), #cc003a); color: #fff; box-shadow: 0 4px 20px rgba(255,77,109,0.25); }
+
+  #btnPip {
+    background: var(--surface);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    flex: 0 0 auto;
+    padding: 1rem 1.2rem;
+    font-size: 1rem;
+  }
+
+  #btnPip:active { transform: scale(0.97); }
+  #btnPip:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .status {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .status span {
+    color: var(--accent2);
+  }
+</style>
 </head>
 <body>
 
-    <h2>Teleprompter PiP</h2>
-    <textarea id="textInput">Escreva seu roteiro aqui... Este texto vai subir suavemente na janelinha flutuante para que você possa gravar seus vídeos com facilidade!</textarea>
+<header>
+  <h1>TELEPROMPTER</h1>
+  <p class="subtitle">Picture-in-Picture · Mobile Ready</p>
+</header>
 
-    <div class="controls">
-        <label>Velocidade: <input type="range" id="speedRange" min="1" max="5" step="0.5" value="1.5"></label>
-        <button id="startBtn">ATIVAR MODO FLUTUANTE (PiP)</button>
-    </div>
+<div class="card">
+  <label>Roteiro</label>
+  <textarea id="script" placeholder="Cole seu roteiro aqui...
+O texto vai rolar automaticamente no canvas abaixo e no modo Picture-in-Picture.
 
-    <canvas id="tpCanvas" width="400" height="300"></canvas>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."></textarea>
 
-    <script>
-        // 1. Configuração Global do Elemento de Vídeo (Obrigatório para Mobile)
-const video = document.createElement('video');
-video.muted = true;
-video.playsInline = true; 
-video.setAttribute('autoplay', '');
-video.setAttribute('muted', '');
+  <div class="controls-row" style="margin-top:1rem;">
+    <span class="speed-label">Velocidade</span>
+    <input type="range" id="speed" min="1" max="10" value="3">
+    <span class="speed-value" id="speedVal">3</span>
+  </div>
+</div>
 
-// O vídeo precisa estar no DOM para o Mobile aceitar o PiP, mas deixamos invisível
-video.style.cssText = "position:fixed; bottom:0; right:0; width:10px; height:10px; z-index:-1; opacity:0.01; pointer-events:none;";
-document.body.appendChild(video);
+<div class="preview-wrap">
+  <canvas id="prompterCanvas"></canvas>
+</div>
 
-const canvas = document.getElementById('tpCanvas');
-const ctx = canvas.getContext('2d');
-const textInput = document.getElementById('textInput');
-const speedRange = document.getElementById('speedRange');
-const startBtn = document.getElementById('startBtn');
+<div class="btn-row">
+  <button id="btnStart">▶ INICIAR</button>
+  <button id="btnPip" disabled title="Picture-in-Picture">⊡ PiP</button>
+</div>
 
-let yPos = canvas.height;
-let animationId = null;
+<p class="status" id="status">Pressione <span>INICIAR</span> para começar</p>
 
-// 2. Função de Renderização do Teleprompter
-function drawText() {
-    // Fundo preto e limpeza
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+<!-- Video element must be in DOM for mobile PiP -->
+<video id="pipVideo" muted playsinline autoplay></video>
 
-    // Configuração do Texto
-    ctx.fillStyle = "white";
-    ctx.font = "bold 24px Arial";
-    ctx.textAlign = "center";
+<script>
+(function() {
+  const canvas = document.getElementById('prompterCanvas');
+  const ctx = canvas.getContext('2d');
+  const video = document.getElementById('pipVideo');
+  const btnStart = document.getElementById('btnStart');
+  const btnPip = document.getElementById('btnPip');
+  const speedInput = document.getElementById('speed');
+  const speedVal = document.getElementById('speedVal');
+  const scriptArea = document.getElementById('script');
+  const statusEl = document.getElementById('status');
 
-    const lines = wrapText(textInput.value, 360);
-    
-    lines.forEach((line, index) => {
-        ctx.fillText(line, canvas.width / 2, yPos + (index * 35));
+  // Canvas internal resolution
+  const W = 960, H = 540;
+  canvas.width = W;
+  canvas.height = H;
+
+  let running = false;
+  let animId = null;
+  let scrollY = 0;
+  let stream = null;
+  let lines = [];
+  let totalTextHeight = 0;
+
+  const PADDING = 60;
+  const LINE_HEIGHT = 52;
+  const FONT_SIZE = 36;
+
+  function getSpeed() {
+    return parseFloat(speedInput.value) * 0.5;
+  }
+
+  function wrapText(text, maxWidth) {
+    const paragraphs = text.split('\n');
+    const result = [];
+    paragraphs.forEach(para => {
+      if (para.trim() === '') { result.push(''); return; }
+      const words = para.split(' ');
+      let line = '';
+      words.forEach(word => {
+        const test = line ? line + ' ' + word : word;
+        if (ctx.measureText(test).width > maxWidth && line) {
+          result.push(line);
+          line = word;
+        } else {
+          line = test;
+        }
+      });
+      if (line) result.push(line);
+    });
+    return result;
+  }
+
+  function buildLines() {
+    ctx.font = `${FONT_SIZE}px 'Space Mono', monospace`;
+    const maxWidth = W - PADDING * 2;
+    lines = wrapText(scriptArea.value || 'Sem roteiro. Adicione seu texto!', maxWidth);
+    totalTextHeight = lines.length * LINE_HEIGHT + H; // extra H for smooth loop entry
+  }
+
+  function drawFrame() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    ctx.fillStyle = '#0a0a0f';
+    ctx.fillRect(0, 0, W, H);
+
+    // Scanlines
+    for (let y = 0; y < H; y += 4) {
+      ctx.fillStyle = 'rgba(0,229,255,0.015)';
+      ctx.fillRect(0, y, W, 2);
+    }
+
+    // Gradient masks top/bottom
+    const gradTop = ctx.createLinearGradient(0, 0, 0, H * 0.25);
+    gradTop.addColorStop(0, 'rgba(10,10,15,1)');
+    gradTop.addColorStop(1, 'rgba(10,10,15,0)');
+
+    const gradBot = ctx.createLinearGradient(0, H * 0.75, 0, H);
+    gradBot.addColorStop(0, 'rgba(10,10,15,0)');
+    gradBot.addColorStop(1, 'rgba(10,10,15,1)');
+
+    // Center line indicator
+    ctx.strokeStyle = 'rgba(0,229,255,0.25)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 8]);
+    ctx.beginPath();
+    ctx.moveTo(PADDING * 0.5, H / 2);
+    ctx.lineTo(W - PADDING * 0.5, H / 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Draw text
+    ctx.font = `${FONT_SIZE}px 'Space Mono', monospace`;
+    ctx.textAlign = 'center';
+
+    const startY = H / 2 - scrollY;
+
+    lines.forEach((line, i) => {
+      const y = startY + i * LINE_HEIGHT;
+      if (y < -LINE_HEIGHT || y > H + LINE_HEIGHT) return;
+
+      // Distance from center determines brightness
+      const dist = Math.abs(y - H / 2) / (H / 2);
+      const alpha = Math.max(0.15, 1 - dist * 1.2);
+
+      ctx.fillStyle = `rgba(232,232,240,${alpha})`;
+
+      // Highlight center line
+      if (dist < 0.12) {
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#00e5ff';
+        ctx.shadowBlur = 18;
+      } else {
+        ctx.shadowBlur = 0;
+      }
+
+      ctx.fillText(line, W / 2, y);
     });
 
-    // Ajuste de Velocidade
-    yPos -= parseFloat(speedRange.value);
+    ctx.shadowBlur = 0;
 
-    // Loop infinito do texto
-    if (yPos < -(lines.length * 35)) {
-        yPos = canvas.height;
+    // Fade overlays
+    ctx.fillStyle = gradTop;
+    ctx.fillRect(0, 0, W, H * 0.3);
+    ctx.fillStyle = gradBot;
+    ctx.fillRect(0, H * 0.7, W, H * 0.3);
+  }
+
+  function tick() {
+    if (!running) return;
+
+    scrollY += getSpeed();
+
+    // Loop: when last line passes center, reset
+    const maxScroll = lines.length * LINE_HEIGHT;
+    if (scrollY > maxScroll) {
+      scrollY = -H / 2;
     }
 
-    animationId = requestAnimationFrame(drawText);
-}
+    drawFrame();
+    animId = requestAnimationFrame(tick);
+  }
 
-// 3. Função Auxiliar para Quebrar Linhas
-function wrapText(text, maxWidth) {
-    const words = text.split(' ');
-    let lines = [];
-    let currentLine = words[0];
+  function startPrompter() {
+    buildLines();
+    scrollY = -H / 2; // start with text off-screen below center
+    running = true;
+    btnStart.textContent = '⏹ PARAR';
+    btnStart.classList.add('running');
+    btnPip.disabled = false;
+    statusEl.innerHTML = 'Rodando — toque em <span>PiP</span> para janela flutuante';
 
-    for (let i = 1; i < words.length; i++) {
-        let word = words[i];
-        let width = ctx.measureText(currentLine + " " + word).width;
-        if (width < maxWidth) {
-            currentLine += " " + word;
-        } else {
-            lines.push(currentLine);
-            currentLine = word;
-        }
+    // Setup stream
+    if (!stream) {
+      stream = canvas.captureStream(30);
+      video.srcObject = stream;
     }
-    lines.push(currentLine);
-    return lines;
-}
 
-// 4. Lógica Principal de Ativação do PiP
-async function ativarTeleprompter() {
-    // Reinicia a posição se já estava rodando
-    if (animationId) cancelAnimationFrame(animationId);
-    yPos = canvas.height;
-    drawText();
+    tick();
+  }
 
-    // Captura o stream do canvas (30 quadros por segundo)
-    const stream = canvas.captureStream(30);
-    video.srcObject = stream;
+  function stopPrompter() {
+    running = false;
+    cancelAnimationFrame(animId);
+    btnStart.textContent = '▶ INICIAR';
+    btnStart.classList.remove('running');
+    btnPip.disabled = true;
+    statusEl.innerHTML = 'Pausado. Pressione <span>INICIAR</span> para continuar';
+
+    // Exit PiP if active
+    if (document.pictureInPictureElement) {
+      document.exitPictureInPicture().catch(() => {});
+    }
+
+    // Draw static frame
+    drawFrame();
+  }
+
+  btnStart.addEventListener('click', () => {
+    if (running) {
+      stopPrompter();
+    } else {
+      startPrompter();
+    }
+  });
+
+  // PiP Button - must happen in user gesture context
+  btnPip.addEventListener('click', async () => {
+    if (!running) return;
+
+    // Check support
+    if (!document.pictureInPictureEnabled) {
+      statusEl.innerHTML = '<span>PiP não suportado neste navegador</span>';
+      return;
+    }
+
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture();
+      statusEl.innerHTML = 'PiP desativado';
+      return;
+    }
 
     try {
-        // Passo crítico para Mobile: Play imediato após o clique
-        await video.play();
+      // Ensure video is playing (required for mobile)
+      await video.play();
 
-        // Aguarda o stream "aquecer" no buffer do vídeo
-        video.onloadedmetadata = async () => {
-            try {
-                if (document.pictureInPictureEnabled) {
-                    await video.requestPictureInPicture();
-                } else {
-                    alert("Seu navegador ou dispositivo não suporta a função de tela flutuante (PiP).");
-                }
-            } catch (err) {
-                console.error("Erro ao solicitar PiP:", err);
-                alert("Erro: O navegador bloqueou a janela. Tente clicar novamente.");
-            }
-        };
+      // Small delay for mobile buffer
+      await new Promise(r => setTimeout(r, 200));
 
-        // Fallback caso o onloadedmetadata demore demais (comum em alguns Androids)
-        setTimeout(async () => {
-            if (!document.pictureInPictureElement) {
-                await video.requestPictureInPicture().catch(() => {});
-            }
-        }, 500);
-
-    } catch (error) {
-        console.error("Erro ao iniciar vídeo:", error);
-        alert("Certifique-se de estar usando Chrome/Safari e que o site esteja em HTTPS.");
+      await video.requestPictureInPicture();
+      statusEl.innerHTML = '📺 <span>Modo PiP ativo!</span> Feche para voltar';
+    } catch (err) {
+      console.error('PiP error:', err);
+      statusEl.innerHTML = `<span>Erro PiP: ${err.message}</span>`;
     }
-}
+  });
 
-// Evento de Clique
-startBtn.addEventListener('click', ativarTeleprompter);
-    </script>
+  // PiP events
+  video.addEventListener('enterpictureinpicture', () => {
+    btnPip.textContent = '✕ PiP';
+  });
+
+  video.addEventListener('leavepictureinpicture', () => {
+    btnPip.textContent = '⊡ PiP';
+    statusEl.innerHTML = 'PiP fechado — rodando no canvas';
+  });
+
+  // Speed display
+  speedInput.addEventListener('input', () => {
+    speedVal.textContent = speedInput.value;
+  });
+
+  // Initial static frame
+  buildLines();
+  drawFrame();
+})();
+</script>
 </body>
 </html>
